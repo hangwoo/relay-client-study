@@ -1,4 +1,4 @@
-async function fetchGraphQL(text, variables) {
+async function fetchGraphQL(text?: string | null, variables?: Record<string, any>) {
   const GITHUB_AUTH_TOKEN = process.env.REACT_APP_GITHUB_AUTH_TOKEN;
 
   const response = await fetch('https://api.github.com/graphql', {

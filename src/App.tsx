@@ -3,7 +3,7 @@ import './App.css';
 import fetchGraphQL from "./fetchGraphQL";
 
 function App() {
-  const [name, setName] = useState(null);
+  const [name, setName] = useState<string | null>(null);
 
   useEffect(() => {
     let isMounted = true;
