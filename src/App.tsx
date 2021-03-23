@@ -1,44 +1,43 @@
-import { useState, useEffect } from 'react';
+import { Suspense } from 'react';
 import './App.css';
-import fetchGraphQL from "./fetchGraphQL";
+import graphql from 'babel-plugin-relay/macro';
+import {
+  RelayEnvironmentProvider,
+  loadQuery,
+  usePreloadedQuery,
+} from 'react-relay/hooks';
+import RelayEnvironment from './RelayEnvironment';
 
-function App() {
-  const [name, setName] = useState<string | null>(null);
+const RepositoryNameQuery = graphql`
+  query AppRepositoryNameQuery {
+    repository(owner: "hangwoo" name: "rust-immgration") {
+        name
+    }
+  }
+`;
 
-  useEffect(() => {
-    let isMounted = true;
-    fetchGraphQL(`
-      query RepositoryNameQuery {
-        repository(owner: "hangwoo" name: "rust-immgration") {
-          name
-        }
-      }
-    `).then(response => {
-      // Avoid updating state if the component unmounted before the fetch completes
-      if (!isMounted) {
-        return;
-      }
-      const data = response.data;
-      setName(data.repository.name);
-    }).catch(error => {
-      console.error(error);
-    });
+const preloadedQuery = loadQuery(RelayEnvironment, RepositoryNameQuery, {});
 
-    return () => {
-      isMounted = false;
-    };
-  }, [fetchGraphQL]);
+function App(props: { preloadedQuery: typeof preloadedQuery }) {
+  const data = usePreloadedQuery(RepositoryNameQuery, props.preloadedQuery) as { repository: { name?: string }};
 
-  // Render "Loading" until the query completes
   return (
     <div className="App">
       <header className="App-header">
-        <p>
-          {name != null ? name : "Loading"}
-        </p>
+        <p>{data.repository.name}</p>
       </header>
     </div>
+  )
+}
+
+function AppRoot() {
+  return (
+    <RelayEnvironmentProvider environment={RelayEnvironment}>
+      <Suspense fallback={'Loading...'}>
+        <App preloadedQuery={preloadedQuery} />
+      </Suspense>
+    </RelayEnvironmentProvider>
   );
 }
 
-export default App;
+export default AppRoot;
