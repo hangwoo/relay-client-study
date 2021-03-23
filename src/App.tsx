@@ -1,10 +1,11 @@
 import { Suspense } from 'react';
+import type { AppRepositoryNameQuery } from 'AppRepositoryNameQuery.graphql';
 import './App.css';
 import graphql from 'babel-plugin-relay/macro';
 import {
   RelayEnvironmentProvider,
   loadQuery,
-  usePreloadedQuery,
+  usePreloadedQuery, PreloadedQuery,
 } from 'react-relay/hooks';
 import RelayEnvironment from './RelayEnvironment';
 
@@ -16,15 +17,19 @@ const RepositoryNameQuery = graphql`
   }
 `;
 
-const preloadedQuery = loadQuery(RelayEnvironment, RepositoryNameQuery, {});
+const preloadedQuery = loadQuery<AppRepositoryNameQuery>(RelayEnvironment, RepositoryNameQuery, {});
 
-function App(props: { preloadedQuery: typeof preloadedQuery }) {
-  const data = usePreloadedQuery(RepositoryNameQuery, props.preloadedQuery) as { repository: { name?: string }};
+interface AppProps {
+  preloadedQuery: PreloadedQuery<AppRepositoryNameQuery>;
+}
+
+function App(props: AppProps) {
+  const data = usePreloadedQuery<AppRepositoryNameQuery>(RepositoryNameQuery, props.preloadedQuery);
 
   return (
     <div className="App">
       <header className="App-header">
-        <p>{data.repository.name}</p>
+        <p>{data.repository && data.repository.name}</p>
       </header>
     </div>
   )
